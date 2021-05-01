@@ -83,11 +83,6 @@ public sealed class Game : GameBase
         ball_speed_x = -ball_speed_x;
         }
 
-        // if( ball_y > 456 ) {
-        // ball_y = 456;
-        // ball_speed_y = -ball_speed_y;
-        // }
-
         if(gc.CheckHitRect(ball_x,ball_y,24,24,player_x,player_y,player_w,player_h)){
             if(ball_speed_y>0){
                 ball_speed_y=-ball_speed_y;
@@ -121,6 +116,7 @@ public sealed class Game : GameBase
         gc.DrawString("time:"+time,0,0);
 
         if(countBlock()==0){
+
             gc.DrawString("Clear!",270, 240);
 
             //Stop the ball
