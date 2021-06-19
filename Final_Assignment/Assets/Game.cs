@@ -24,7 +24,7 @@ public sealed class Game : GameBase
     int box_h = 81;
 
     int player_x = 360;
-    static int player_y = 1000;
+    int player_y = 1000;
     int player_dir = 1;
     int player_speed = 5;
 
@@ -38,7 +38,7 @@ public sealed class Game : GameBase
 
     int background_speed = 2;
 
-    double attack_rate = 0.1;
+    float attack_rate = 0.1f;
 
     /// <summary>
     /// 初期化処理
@@ -47,7 +47,7 @@ public sealed class Game : GameBase
     {
         // キャンバスの大きさを設定します
         gc.ChangeCanvasSize(720, 1280);
-        // gc.SetResolution(640, 480);
+        gc.SetResolution(720, 1280);
 
         gc.TryLoad("hs",out high_score);
 
@@ -83,10 +83,10 @@ public sealed class Game : GameBase
             }
 
             //stop the flight if contacts with the wall
-            if(player_x==0 || player_x==550){
+            if(player_x<=0 || player_x>=550){
                 player_speed = 0;
                 if(gc.GetPointerFrameCount(0) ==1){
-                    if(player_x==0) player_x +=1;
+                    if(player_x<=0) player_x +=1;
                     else player_x -=1;
                 }
             }else{
@@ -94,25 +94,24 @@ public sealed class Game : GameBase
                 player_x += player_dir * player_speed;
             }
 
-            for(int i =0 ; i < BOX_NUM ; i ++ )
-            {
-            //箱を動かす処理
-            box_y[i] = box_y[i] + box_speed[i];
+            for(int i =0 ; i < BOX_NUM ; i ++ ){
+                //箱を動かす処理
+                box_y[i] = box_y[i] + box_speed[i];
 
-            if(box_y[i]> 1280){
-                box_x[i] = gc.Random(0,696);
-                box_y[i] = -gc.Random(100,1280);
-                box_speed[i] = gc.Random(3,6);
-            }
+                if(box_y[i]> 1280){
+                    box_x[i] = gc.Random(0,696);
+                    box_y[i] = -gc.Random(100,1280);
+                    box_speed[i] = gc.Random(3,6);
+                }
 
-            //playerと箱の当り判定
-            if (gc.CheckHitRect (
-                player_x,player_y,170,167,
-                box_x[i],box_y[i],box_w,box_h)) {
-                //当たった時の処理
-                gameState =2;
-                gc.Save("hs",high_score);
-            }
+                //playerと箱の当り判定
+                if (gc.CheckHitRect (
+                    player_x,player_y,170,167,
+                    box_x[i],box_y[i],box_w,box_h)) {
+                    //当たった時の処理
+                    gameState =2;
+                    gc.Save("hs",high_score);
+                }
             }
 
             //playerが画面左右に着いてもgameOverになるように
@@ -133,7 +132,7 @@ public sealed class Game : GameBase
             if(gc.GetPointerFrameCount(0) >=120){
                 gameState=0;
                 player_x = 360;
-                player_y = 1000;
+                player_y = 1100;
                 score = 0;
                 count = 0;
                 // str="";
@@ -171,18 +170,27 @@ public sealed class Game : GameBase
                 // gc.FillRect(box_x[i],box_y[i],box_w,box_h); 
                 gc.DrawImage(GcImage.Enemy,box_x[i],box_y[i]); 
             }
-            gc.DrawString("SCORE:"+score,0,0);
-            gc.DrawString("HIGH:"+high_score,0,60);
+            gc.SetColor(255,255,255);
+            gc.FillRect(0,1200,720,1280);
+
+            // bottom bar
+            gc.SetColor(0,0,0);
+            gc.SetFontSize(50);
+            gc.DrawString("SCORE:"+score,0,1240);
+            gc.DrawString("HIGH:"+high_score,360,1240);
 
         }
         else if(gameState == 2){
             //ゲームオーバー時の処理
-            gc.SetColor(0,0,0);
+            gc.SetColor(255,255,255);
+            gc.SetFontSize(100);
             gc.DrawString("GAME OVER",140,640);
-            // gc.DrawString(str,0,300);
-            gc.DrawString("SCORE:"+score,0,0);
-            gc.DrawString("HIGH:"+high_score,0,60);
 
+            // bottom bar
+            gc.SetColor(0,0,0);
+            gc.SetFontSize(50);
+            gc.DrawString("SCORE:"+score,0,1240);
+            gc.DrawString("HIGH:"+high_score,360,1240);
         }
 
         // 青空の画像を描画します
