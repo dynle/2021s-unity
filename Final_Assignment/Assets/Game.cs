@@ -16,12 +16,12 @@ public sealed class Game : GameBase
     // string url = "";
     // string str = "";
 
-    const int BOX_NUM = 10;
-    int[] box_x = new int [BOX_NUM];
-    int[] box_y = new int [BOX_NUM];
-    int[] box_speed = new int [BOX_NUM];
-    int box_w = 100;
-    int box_h = 81;
+    const int ENEMY_NUM = 10;
+    int[] enemy_x = new int [ENEMY_NUM];
+    int[] enemy_y = new int [ENEMY_NUM];
+    int[] box_speed = new int [ENEMY_NUM];
+    int enemy_w = 100;
+    int enemy_h = 81;
 
     int player_x = 360;
     int player_y = 1000;
@@ -71,8 +71,8 @@ public sealed class Game : GameBase
             //ゲーム中の処理
             count++;
             score = count/60;
-            box_w = 24+count/300;
-            box_h = 24+count/300;
+            enemy_w = 24+count/300;
+            enemy_h = 24+count/300;
 
             if(score>high_score){
                 high_score = score;
@@ -94,20 +94,20 @@ public sealed class Game : GameBase
                 player_x += player_dir * player_speed;
             }
 
-            for(int i =0 ; i < BOX_NUM ; i ++ ){
+            for(int i =0 ; i < ENEMY_NUM ; i ++ ){
                 //箱を動かす処理
-                box_y[i] = box_y[i] + box_speed[i];
+                enemy_y[i] = enemy_y[i] + box_speed[i];
 
-                if(box_y[i]> 1280){
-                    box_x[i] = gc.Random(0,696);
-                    box_y[i] = -gc.Random(100,1280);
+                if(enemy_y[i]> 1280){
+                    enemy_x[i] = gc.Random(0,696);
+                    enemy_y[i] = -gc.Random(100,1280);
                     box_speed[i] = gc.Random(3,6);
                 }
 
                 //playerと箱の当り判定
                 if (gc.CheckHitRect (
                     player_x,player_y,170,167,
-                    box_x[i],box_y[i],box_w,box_h)) {
+                    enemy_x[i],enemy_y[i],enemy_w,enemy_h)) {
                     //当たった時の処理
                     gameState =2;
                     gc.Save("hs",high_score);
@@ -166,18 +166,19 @@ public sealed class Game : GameBase
             //ゲーム中の処理
             // gc.DrawOnlineImage("http://web.sfc.keio.ac.jp/~wadari/sdp/k07_web/Player.png",player_x,player_y);
             gc.DrawImage(GcImage.Flighter,player_x,player_y);
-            for(int i =0 ; i < BOX_NUM ; i ++ ){
-                // gc.FillRect(box_x[i],box_y[i],box_w,box_h); 
-                gc.DrawImage(GcImage.Enemy,box_x[i],box_y[i]); 
+            for(int i =0 ; i < ENEMY_NUM ; i ++ ){
+                // gc.FillRect(enemy_x[i],enemy_y[i],enemy_w,enemy_h); 
+                gc.DrawImage(GcImage.Enemy,enemy_x[i],enemy_y[i]); 
             }
+
+            // bottom bar
             gc.SetColor(255,255,255);
             gc.FillRect(0,1200,720,1280);
 
-            // bottom bar
             gc.SetColor(0,0,0);
             gc.SetFontSize(50);
-            gc.DrawString("SCORE:"+score,0,1240);
-            gc.DrawString("HIGH:"+high_score,360,1240);
+            gc.DrawString("SCORE:"+score,100,1220);
+            gc.DrawString("HIGH:"+high_score,460,1220);
 
         }
         else if(gameState == 2){
@@ -187,10 +188,10 @@ public sealed class Game : GameBase
             gc.DrawString("GAME OVER",140,640);
 
             // bottom bar
-            gc.SetColor(0,0,0);
-            gc.SetFontSize(50);
-            gc.DrawString("SCORE:"+score,0,1240);
-            gc.DrawString("HIGH:"+high_score,360,1240);
+            // gc.SetColor(0,0,0);
+            // gc.SetFontSize(50);
+            // gc.DrawString("SCORE:"+score,0,1240);
+            // gc.DrawString("HIGH:"+high_score,360,1240);
         }
 
         // 青空の画像を描画します
@@ -207,10 +208,10 @@ public sealed class Game : GameBase
     }
 
     public void resetValue(){
-        for(int i =0 ; i < BOX_NUM ; i ++ )
+        for(int i =0 ; i < ENEMY_NUM ; i ++ )
         {
-            box_x[i] = gc.Random(0,616);
-            box_y[i] = -gc.Random(100,480);
+            enemy_x[i] = gc.Random(0,616);
+            enemy_y[i] = -gc.Random(100,480);
             box_speed[i] = gc.Random(3,6);
         }
     }
