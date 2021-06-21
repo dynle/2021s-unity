@@ -23,7 +23,6 @@ public sealed class Game : GameBase
     int player_speed = 5;
 
     int score =0;
-    int count =0;
 
     int gameState = 0;
     int high_score = 0;
@@ -60,9 +59,6 @@ public sealed class Game : GameBase
             }
         }
         else if(gameState == 1){
-            count++;
-            enemy_w = 24+count/300;
-            enemy_h = 24+count/300;
 
             if(score>high_score){
                 high_score = score;
@@ -76,8 +72,8 @@ public sealed class Game : GameBase
             if(player_x<=0 || player_x>=550){
                 player_speed = 0;
                 if(gc.GetPointerFrameCount(0) ==1){
-                    if(player_x<=0) player_x +=1;
-                    else player_x -=1;
+                    if(player_x<=0) player_x +=10;
+                    else player_x -=10;
                 }
             }else{
                 player_speed = 5;
@@ -151,7 +147,6 @@ public sealed class Game : GameBase
                 player_x = 360;
                 player_y = 1000;
                 score = 0;
-                count = 0;
                 resetValue();
             }
         }
