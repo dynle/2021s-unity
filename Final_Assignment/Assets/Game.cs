@@ -13,8 +13,9 @@ public sealed class Game : GameBase
     int[] enemy_x = new int [ENEMY_NUM];
     int[] enemy_y = new int [ENEMY_NUM];
     int[] box_speed = new int [ENEMY_NUM];
-    int enemy_w = 100;
-    int enemy_h = 81;
+    bool[] enemy_survived = new bool[ENEMY_NUM];
+    int enemy_w = 80;
+    int enemy_h = 61;
 
     int player_x = 360;
     int player_y = 1000;
@@ -29,10 +30,14 @@ public sealed class Game : GameBase
 
     // tmp
     const int BULLET_NUM = 100;
-    int[] bullet_x = new int [BULLET_NUM];
-    int[] bullet_y = new int [BULLET_NUM];
-    bool[] bullet_check = new bool [BULLET_NUM];
-    int bullet_speed = -20;
+    // int[] bullet_x = new int [BULLET_NUM];
+    // int[] bullet_y = new int [BULLET_NUM];
+    // bool[] bullet_check = new bool [BULLET_NUM];
+    int bullet_speed = -100;
+
+    int bullet_x = 0;
+    int bullet_y = 1000;
+    bool bullet_check = false;
 
     // unused
     int background_speed = 2;
@@ -56,7 +61,6 @@ public sealed class Game : GameBase
         }
         else if(gameState == 1){
             count++;
-            score = count/60;
             enemy_w = 24+count/300;
             enemy_h = 24+count/300;
 
@@ -84,34 +88,62 @@ public sealed class Game : GameBase
             for(int i =0 ; i < ENEMY_NUM ; i ++ ){
                 enemy_y[i] = enemy_y[i] + box_speed[i];
 
+                if(enemy_survived[i]==false){
+                    enemy_x[i]=-100;
+                    enemy_y[i]=-100;
+                }
+
                 // show new enemies
-                if(enemy_y[i]> 1280){
-                    enemy_x[i] = gc.Random(0,696);
-                    enemy_y[i] = -gc.Random(100,1280);
-                    box_speed[i] = gc.Random(3,6);
+                if(enemy_y[i]> 1280 || enemy_survived[i]==false){
+                    Debug.Log("spawned");
+                    enemy_x[i] = gc.Random(80,640);
+                    enemy_y[i] = -gc.Random(100,480);
+                    box_speed[i] = gc.Random(2,5);
+                    enemy_survived[i] = true;
                 }
 
                 if (gc.CheckHitRect (
-                    player_x,player_y,170,167,
+                    player_x,player_y,150,147,
                     enemy_x[i],enemy_y[i],enemy_w,enemy_h)) {
                     gameState =2;
                     gc.Save("hs",high_score);
+                }
+
+                if(gc.CheckHitRect(bullet_x,bullet_y,48,36,enemy_x[i],enemy_y[i],enemy_w,enemy_h)){
+                    bullet_y=1000;
+                    bullet_check=false;
+                    enemy_survived[i] = false;
+                    score++;
                 }
             }
 
             
             // firing bullets
-            for(int i=0 ; i <BULLET_NUM ; i++){
-                // 지금은 위에 박힘
-                if(bullet_y[i]>=0){
-                    bullet_y[i] += bullet_speed;
-                }
-                if(bullet_check[i]==false){
-                    bullet_x[i] = player_x+75;
-                    // bullet_x[i] = player_x+i*50;
-                    bullet_check[i]=true;
-                }
+            // for(int i=0 ; i <BULLET_NUM ; i++){
+            //     // 지금은 위에 박힘
+            //     if(bullet_y[i]>=0){
+            //         bullet_y[i] += bullet_speed;
+            //     }
+            //     if(bullet_check[i]==false){
+            //         bullet_x[i] = player_x+75;
+            //         // bullet_x[i] = player_x+i*50;
+            //         bullet_check[i]=true;
+            //     }
+            // }
+            if(bullet_check==false){
+                bullet_x = player_x+75;
+                bullet_check=true;
             }
+
+            if(bullet_y<0){
+                bullet_y=1000;
+                bullet_check=false;
+            }
+
+            bullet_y += bullet_speed;
+
+
+
         }
         else if(gameState == 2){
             if(gc.GetPointerFrameCount(0) >=120){
@@ -144,9 +176,11 @@ public sealed class Game : GameBase
             }
 
             // Bullets
-            for(int j=0;j<BULLET_NUM;j++){
-                gc.DrawImage(GcImage.BallRed,bullet_x[j],bullet_y[j]);
-            }
+            // for(int j=0;j<BULLET_NUM;j++){
+            //     gc.DrawImage(GcImage.BallRed,bullet_x[j],bullet_y[j]);
+            // }
+            gc.DrawImage(GcImage.Bullet,bullet_x,bullet_y);
+
 
             // bottom bar
             gc.SetColor(255,255,255);
@@ -176,14 +210,15 @@ public sealed class Game : GameBase
 
     public void resetValue(){
         for(int i =0 ; i < ENEMY_NUM ; i ++ ){
-            enemy_x[i] = gc.Random(0,616);
+            enemy_x[i] = gc.Random(80,640);
             enemy_y[i] = -gc.Random(100,480);
-            box_speed[i] = gc.Random(3,6);
+            box_speed[i] = gc.Random(2,5);
+            enemy_survived[i] = true;
         }
 
-        for (int j=0;j<BULLET_NUM;j++){
-            bullet_y[j] = 1000;
-            bullet_check[j] = false;
-        }
+        // for (int j=0;j<BULLET_NUM;j++){
+        //     bullet_y[j] = 1000;
+        //     bullet_check[j] = false;
+        // }
     }
 }
