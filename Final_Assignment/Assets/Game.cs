@@ -25,12 +25,17 @@ public sealed class Game : GameBase
     int count =0;
 
     int gameState = 0;
-
     int high_score = 0;
 
-    int background_speed = 2;
+    // tmp
+    const int BULLET_NUM = 100;
+    int[] bullet_x = new int [BULLET_NUM];
+    int[] bullet_y = new int [BULLET_NUM];
+    bool[] bullet_check = new bool [BULLET_NUM];
+    int bullet_speed = -20;
 
-    float attack_rate = 0.1f;
+    // unused
+    int background_speed = 2;
 
     public override void InitGame()
     {
@@ -60,7 +65,7 @@ public sealed class Game : GameBase
             }
 
             if(gc.GetPointerFrameCount(0) ==1 ){
-            player_dir = -player_dir;
+                player_dir = -player_dir;
             }
 
             //stop the flight if contacts with the wall
@@ -75,9 +80,11 @@ public sealed class Game : GameBase
                 player_x += player_dir * player_speed;
             }
 
+            // Showing enemeis and Check whether the enemies contact with the player
             for(int i =0 ; i < ENEMY_NUM ; i ++ ){
                 enemy_y[i] = enemy_y[i] + box_speed[i];
 
+                // show new enemies
                 if(enemy_y[i]> 1280){
                     enemy_x[i] = gc.Random(0,696);
                     enemy_y[i] = -gc.Random(100,1280);
@@ -91,18 +98,31 @@ public sealed class Game : GameBase
                     gc.Save("hs",high_score);
                 }
             }
+
+            
+            // firing bullets
+            for(int i=0 ; i <BULLET_NUM ; i++){
+                // 지금은 위에 박힘
+                if(bullet_y[i]>=0){
+                    bullet_y[i] += bullet_speed;
+                }
+                if(bullet_check[i]==false){
+                    bullet_x[i] = player_x+75;
+                    // bullet_x[i] = player_x+i*50;
+                    bullet_check[i]=true;
+                }
+            }
         }
         else if(gameState == 2){
             if(gc.GetPointerFrameCount(0) >=120){
                 gameState=0;
                 player_x = 360;
-                player_y = 1100;
+                player_y = 1000;
                 score = 0;
                 count = 0;
                 resetValue();
             }
         }
-
     }
 
     public override void DrawGame()
@@ -118,8 +138,14 @@ public sealed class Game : GameBase
         else if(gameState == 1){
             gc.DrawImage(GcImage.Background,0,0);
             gc.DrawImage(GcImage.Flighter,player_x,player_y);
+            // Enemies
             for(int i =0 ; i < ENEMY_NUM ; i ++ ){
                 gc.DrawImage(GcImage.Enemy,enemy_x[i],enemy_y[i]); 
+            }
+
+            // Bullets
+            for(int j=0;j<BULLET_NUM;j++){
+                gc.DrawImage(GcImage.BallRed,bullet_x[j],bullet_y[j]);
             }
 
             // bottom bar
@@ -149,12 +175,15 @@ public sealed class Game : GameBase
     }
 
     public void resetValue(){
-        for(int i =0 ; i < ENEMY_NUM ; i ++ )
-        {
+        for(int i =0 ; i < ENEMY_NUM ; i ++ ){
             enemy_x[i] = gc.Random(0,616);
             enemy_y[i] = -gc.Random(100,480);
             box_speed[i] = gc.Random(3,6);
         }
-    }
 
+        for (int j=0;j<BULLET_NUM;j++){
+            bullet_y[j] = 1000;
+            bullet_check[j] = false;
+        }
+    }
 }
