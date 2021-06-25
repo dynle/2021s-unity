@@ -12,31 +12,32 @@ public sealed class Game : GameBase
     const int ENEMY_NUM = 10;
     int[] enemy_x = new int [ENEMY_NUM];
     int[] enemy_y = new int [ENEMY_NUM];
-    int[] box_speed = new int [ENEMY_NUM];
+    int[] enemy_speed = new int [ENEMY_NUM];
     bool[] enemy_survived = new bool[ENEMY_NUM];
     int enemy_w = 80;
     int enemy_h = 61;
+    int enemy_speed_min = 2;
+    int enemy_speed_max = 5;
 
     int player_x = 360;
     int player_y = 1000;
     int player_dir = 1;
-    int player_speed = 5;
+    int player_speed = 8;
 
     int score =0;
 
     int gameState = 0;
     int high_score = 0;
 
-    // tmp
-    const int BULLET_NUM = 100;
-    // int[] bullet_x = new int [BULLET_NUM];
-    // int[] bullet_y = new int [BULLET_NUM];
-    // bool[] bullet_check = new bool [BULLET_NUM];
     int bullet_speed = -100;
-
     int bullet_x = 0;
     int bullet_y = 1000;
-    bool bullet_check = false;
+    bool bullet_onscreen = false;
+
+    // tmp
+    int earth_hp = 100;
+    int earth_count = 0;
+    int stage=1;
 
     // unused
     int background_speed = 2;
@@ -53,11 +54,15 @@ public sealed class Game : GameBase
 
     public override void UpdateGame()
     {
+
         if(gameState == 0){
             if(gc.GetPointerFrameCount(0) == 1){
                 gameState =1;
             }
         }
+
+
+
         else if(gameState == 1){
 
             if(score>high_score){
@@ -76,77 +81,84 @@ public sealed class Game : GameBase
                     else player_x -=10;
                 }
             }else{
-                player_speed = 5;
+                player_speed = 8;
                 player_x += player_dir * player_speed;
             }
 
-            // Showing enemeis and Check whether the enemies contact with the player
+            // show enemies, check enemy & player, check enemy & bullet
             for(int i =0 ; i < ENEMY_NUM ; i ++ ){
-                enemy_y[i] = enemy_y[i] + box_speed[i];
+                enemy_y[i] = enemy_y[i] + enemy_speed[i];
 
                 if(enemy_survived[i]==false){
                     enemy_x[i]=-100;
                     enemy_y[i]=-100;
                 }
+                
+                // Earth HP
+                if(enemy_y[i]> 1280){
+                    earth_count++;
+                    earth_hp-=20;
+                }
+                if(earth_hp==0) gameState=2;
 
                 // show new enemies
                 if(enemy_y[i]> 1280 || enemy_survived[i]==false){
-                    Debug.Log("spawned");
+                    // Debug.Log("spawned");
                     enemy_x[i] = gc.Random(80,640);
                     enemy_y[i] = -gc.Random(100,480);
-                    box_speed[i] = gc.Random(2,5);
+                    enemy_speed[i] = gc.Random(enemy_speed_min,enemy_speed_max);
                     enemy_survived[i] = true;
                 }
 
+                // check whether the enemies contact with the player
                 if (gc.CheckHitRect (
                     player_x,player_y,150,147,
                     enemy_x[i],enemy_y[i],enemy_w,enemy_h)) {
-                    gameState =2;
-                    gc.Save("hs",high_score);
+                        earth_hp=0;
+                        gameState =2;
+                        gc.Save("hs",high_score);
                 }
 
+                // check whether a bullet contacts with an enemy
                 if(gc.CheckHitRect(bullet_x,bullet_y,48,36,enemy_x[i],enemy_y[i],enemy_w,enemy_h)){
                     bullet_y=1000;
-                    bullet_check=false;
+                    bullet_onscreen=false;
                     enemy_survived[i] = false;
                     score++;
+
+                    // change stage
+                    if(score!=0 && score%50==0){
+                        enemy_speed_min++;
+                        enemy_speed_max++;
+                        stage++;
+                    }
                 }
             }
 
-            
-            // firing bullets
-            // for(int i=0 ; i <BULLET_NUM ; i++){
-            //     // 지금은 위에 박힘
-            //     if(bullet_y[i]>=0){
-            //         bullet_y[i] += bullet_speed;
-            //     }
-            //     if(bullet_check[i]==false){
-            //         bullet_x[i] = player_x+75;
-            //         // bullet_x[i] = player_x+i*50;
-            //         bullet_check[i]=true;
-            //     }
-            // }
-            if(bullet_check==false){
+            if(bullet_onscreen==false){
                 bullet_x = player_x+75;
-                bullet_check=true;
+                bullet_onscreen=true;
             }
 
             if(bullet_y<0){
                 bullet_y=1000;
-                bullet_check=false;
+                bullet_onscreen=false;
             }
 
             bullet_y += bullet_speed;
-
-
-
         }
+
+
+
         else if(gameState == 2){
             if(gc.GetPointerFrameCount(0) >=120){
                 gameState=0;
                 player_x = 360;
                 player_y = 1000;
                 score = 0;
+                enemy_speed_min=2;
+                enemy_speed_max=5;
+                stage = 1;
                 resetValue();
             }
         }
@@ -158,33 +170,56 @@ public sealed class Game : GameBase
             gc.ClearScreen();
             gc.SetColor(0,0,0);
             gc.SetFontSize(100);
-            gc.DrawString("Start Screen",50,160);
+            gc.DrawString("Protect Earth",50,160);
             gc.SetFontSize(60);
             gc.DrawString("Tap screen to start",70,300);
         }
         else if(gameState == 1){
             gc.DrawImage(GcImage.Background,0,0);
             gc.DrawImage(GcImage.Flighter,player_x,player_y);
+
             // Enemies
             for(int i =0 ; i < ENEMY_NUM ; i ++ ){
                 gc.DrawImage(GcImage.Enemy,enemy_x[i],enemy_y[i]); 
             }
 
             // Bullets
-            // for(int j=0;j<BULLET_NUM;j++){
-            //     gc.DrawImage(GcImage.BallRed,bullet_x[j],bullet_y[j]);
-            // }
             gc.DrawImage(GcImage.Bullet,bullet_x,bullet_y);
 
-
-            // bottom bar
-            gc.SetColor(255,255,255);
-            gc.FillRect(0,1200,720,1280);
-
+            // bottom bar black
             gc.SetColor(0,0,0);
-            gc.SetFontSize(50);
-            gc.DrawString("SCORE:"+score,100,1220);
-            gc.DrawString("HIGH:"+high_score,460,1220);
+            gc.FillRect(0,1180,720,40);
+
+            // bottom bar black - EARTH HP yellow
+            gc.SetColor(255,255,0);
+            gc.SetFontSize(30);
+            gc.DrawString("EARTH HP",0,1190);
+
+            // bottom bar black - earth hp bar red
+            gc.SetColor(255,0,0);
+            gc.FillRect(120,1190,600-earth_count*120,20);
+            
+            // bottom bar black - earth hp white
+            gc.SetColor(255,255,255);
+            gc.SetFontSize(40);
+            gc.DrawString(earth_hp.ToString(),360,1190);
+
+            // bottom bar white
+            gc.SetColor(255,255,255);
+            gc.FillRect(0,1220,720,60);
+
+            // bottom bar white - score, stage, high score
+            gc.SetColor(0,0,0);
+            gc.SetFontSize(40);
+            gc.DrawString("SCORE:"+score,80,1240);
+            gc.DrawString("STAGE "+stage,300,1240);
+            gc.DrawString("HIGH:"+high_score,500,1240);
+
+            if(score!=0 && score%50==0){
+                    gc.SetColor(255,0,0);
+                    gc.SetFontSize(100);
+                    gc.DrawString("Speed Up!",140,640);
+            }
 
         }
         else if(gameState == 2){
@@ -193,6 +228,20 @@ public sealed class Game : GameBase
             gc.DrawString("GAME OVER",140,640);
             gc.SetFontSize(50);
             gc.DrawString("Press 2 secs to restart",70,740);
+
+            // bottom bar black
+            gc.SetColor(0,0,0);
+            gc.FillRect(0,1180,720,40);
+
+            // bottom bar black - EARTH HP yellow
+            gc.SetColor(255,255,0);
+            gc.SetFontSize(30);
+            gc.DrawString("EARTH HP",0,1190);
+
+            // bottom bar black - earth hp white
+            gc.SetColor(255,255,255);
+            gc.SetFontSize(40);
+            gc.DrawString(earth_hp.ToString(),360,1190);
 
 
             // bottom bar
@@ -207,13 +256,10 @@ public sealed class Game : GameBase
         for(int i =0 ; i < ENEMY_NUM ; i ++ ){
             enemy_x[i] = gc.Random(80,640);
             enemy_y[i] = -gc.Random(100,480);
-            box_speed[i] = gc.Random(2,5);
+            enemy_speed[i] = gc.Random(enemy_speed_min,enemy_speed_max);
             enemy_survived[i] = true;
+            earth_hp = 100;
+            earth_count = 0;
         }
-
-        // for (int j=0;j<BULLET_NUM;j++){
-        //     bullet_y[j] = 1000;
-        //     bullet_check[j] = false;
-        // }
     }
 }
