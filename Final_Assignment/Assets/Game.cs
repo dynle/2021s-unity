@@ -170,9 +170,11 @@ public sealed class Game : GameBase
             gc.ClearScreen();
             gc.SetColor(0,0,0);
             gc.SetFontSize(100);
-            gc.DrawString("Protect Earth",50,160);
-            gc.SetFontSize(60);
-            gc.DrawString("Tap screen to start",70,300);
+            gc.DrawString("Protect Earth",50,260);
+            if(gc.CurrentTimestamp%2==0){
+                gc.SetFontSize(60);
+                gc.DrawString("Tap screen to start",70,900);
+            }
         }
         else if(gameState == 1){
             gc.DrawImage(GcImage.Background,0,0);
