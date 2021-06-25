@@ -168,12 +168,16 @@ public sealed class Game : GameBase
     {
         if(gameState == 0){
             gc.ClearScreen();
-            gc.SetColor(0,0,0);
+            gc.SetBackgroundColor(0,0,0);
+            gc.DrawImage(GcImage.BackgroundFirst,100,500,500,500);
+            gc.DrawImage(GcImage.Enemy,120,400,330);
+            gc.DrawImage(GcImage.Enemy,500,350,30);
+            gc.SetColor(255,255,255);
             gc.SetFontSize(100);
             gc.DrawString("Protect Earth",50,260);
             if(gc.CurrentTimestamp%2==0){
                 gc.SetFontSize(60);
-                gc.DrawString("Tap screen to start",70,900);
+                gc.DrawString("Tap screen to start",70,1000);
             }
         }
         else if(gameState == 1){
