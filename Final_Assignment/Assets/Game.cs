@@ -3,10 +3,6 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-/// <summary>
-/// ゲームクラス。
-/// 学生が編集すべきソースコードです。
-/// </summary>
 public sealed class Game : GameBase
 {
     const int ENEMY_NUM = 10;
@@ -34,13 +30,11 @@ public sealed class Game : GameBase
     int bullet_y = 1000;
     bool bullet_onscreen = false;
 
-    // tmp
     int earth_hp = 100;
     int earth_count = 0;
     int stage=1;
 
-    // unused
-    int background_speed = 2;
+    // tmp
 
     public override void InitGame()
     {
@@ -103,14 +97,13 @@ public sealed class Game : GameBase
 
                 // show new enemies
                 if(enemy_y[i]> 1280 || enemy_survived[i]==false){
-                    // Debug.Log("spawned");
                     enemy_x[i] = gc.Random(80,640);
                     enemy_y[i] = -gc.Random(100,480);
                     enemy_speed[i] = gc.Random(enemy_speed_min,enemy_speed_max);
                     enemy_survived[i] = true;
                 }
 
-                // check whether the enemies contact with the player
+                // check whether enemies contact with the player
                 if (gc.CheckHitRect (
                     player_x,player_y,150,147,
                     enemy_x[i],enemy_y[i],enemy_w,enemy_h)) {
@@ -135,16 +128,15 @@ public sealed class Game : GameBase
                 }
             }
 
+            // shooting bullets
             if(bullet_onscreen==false){
                 bullet_x = player_x+75;
                 bullet_onscreen=true;
             }
-
             if(bullet_y<0){
                 bullet_y=1000;
                 bullet_onscreen=false;
             }
-
             bullet_y += bullet_speed;
         }
 
@@ -168,13 +160,14 @@ public sealed class Game : GameBase
     {
         if(gameState == 0){
             gc.ClearScreen();
-            gc.SetBackgroundColor(0,0,0);
-            gc.DrawImage(GcImage.BackgroundFirst,100,500,500,500);
-            gc.DrawImage(GcImage.Enemy,120,400,330);
-            gc.DrawImage(GcImage.Enemy,500,350,30);
+            // gc.SetBackgroundColor(0,0,0);
+            gc.DrawImage(GcImage.BackgroundFirst,0,0);
+            gc.DrawImage(GcImage.BackgroundFirst_Earth,100,500,500,500);
+            // gc.DrawImage(GcImage.Enemy,120,400,330);
+            // gc.DrawImage(GcImage.Enemy,500,350,30);
             gc.SetColor(255,255,255);
-            gc.SetFontSize(100);
-            gc.DrawString("Protect Earth",50,260);
+            gc.SetFontSize(90);
+            gc.DrawString("Save the Earth",50,260);
             if(gc.CurrentTimestamp%2==0){
                 gc.SetFontSize(60);
                 gc.DrawString("Tap screen to start",70,1000);
@@ -191,6 +184,13 @@ public sealed class Game : GameBase
 
             // Bullets
             gc.DrawImage(GcImage.Bullet,bullet_x,bullet_y);
+
+            if(score!=0 && score%50==0){
+                    gc.SetColor(255,0,0);
+                    // gc.SetFontSize(100);
+                    gc.DrawString("Speed Up!",250,640);
+                    // gc.DrawString("Speed Up!",140,640);
+            }
 
             // bottom bar black
             gc.SetColor(0,0,0);
@@ -221,19 +221,14 @@ public sealed class Game : GameBase
             gc.DrawString("STAGE "+stage,300,1240);
             gc.DrawString("HIGH:"+high_score,500,1240);
 
-            if(score!=0 && score%50==0){
-                    gc.SetColor(255,0,0);
-                    gc.SetFontSize(100);
-                    gc.DrawString("Speed Up!",140,640);
-            }
 
         }
         else if(gameState == 2){
             gc.SetColor(255,255,255);
             gc.SetFontSize(100);
-            gc.DrawString("GAME OVER",140,640);
+            gc.DrawString("GAME OVER",140,440);
             gc.SetFontSize(50);
-            gc.DrawString("Press 2 secs to restart",70,740);
+            gc.DrawString("Press 2 secs to restart",70,640);
 
             // bottom bar black
             gc.SetColor(0,0,0);
@@ -248,13 +243,6 @@ public sealed class Game : GameBase
             gc.SetColor(255,255,255);
             gc.SetFontSize(40);
             gc.DrawString(earth_hp.ToString(),360,1190);
-
-
-            // bottom bar
-            // gc.SetColor(0,0,0);
-            // gc.SetFontSize(50);
-            // gc.DrawString("SCORE:"+score,0,1240);
-            // gc.DrawString("HIGH:"+high_score,360,1240);
         }
     }
 
