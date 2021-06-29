@@ -34,8 +34,6 @@ public sealed class Game : GameBase
     int earth_count = 0;
     int stage=1;
 
-    // tmp
-
     public override void InitGame()
     {
         gc.ChangeCanvasSize(720, 1280);
@@ -48,14 +46,11 @@ public sealed class Game : GameBase
 
     public override void UpdateGame()
     {
-
         if(gameState == 0){
             if(gc.GetPointerFrameCount(0) == 1){
                 gameState =1;
             }
         }
-
-
 
         else if(gameState == 1){
 
@@ -83,6 +78,7 @@ public sealed class Game : GameBase
             for(int i =0 ; i < ENEMY_NUM ; i ++ ){
                 enemy_y[i] = enemy_y[i] + enemy_speed[i];
 
+                // hide enemies when enemey_surived is changed to false
                 if(enemy_survived[i]==false){
                     enemy_x[i]=-100;
                     enemy_y[i]=-100;
@@ -90,6 +86,7 @@ public sealed class Game : GameBase
                 
                 // Earth HP
                 if(enemy_y[i]> 1280){
+                    gc.PlaySound(GcSound.Bling);
                     earth_count++;
                     earth_hp-=20;
                 }
@@ -105,7 +102,7 @@ public sealed class Game : GameBase
 
                 // check whether enemies contact with the player
                 if (gc.CheckHitRect (
-                    player_x,player_y,150,147,
+                    player_x,player_y,110,107,
                     enemy_x[i],enemy_y[i],enemy_w,enemy_h)) {
                         earth_hp=0;
                         gameState =2;
@@ -140,9 +137,8 @@ public sealed class Game : GameBase
             bullet_y += bullet_speed;
         }
 
-
-
         else if(gameState == 2){
+            // restart the game
             if(gc.GetPointerFrameCount(0) >=120){
                 gameState=0;
                 player_x = 360;
@@ -160,11 +156,8 @@ public sealed class Game : GameBase
     {
         if(gameState == 0){
             gc.ClearScreen();
-            // gc.SetBackgroundColor(0,0,0);
             gc.DrawImage(GcImage.BackgroundFirst,0,0);
             gc.DrawImage(GcImage.BackgroundFirst_Earth,100,500,500,500);
-            // gc.DrawImage(GcImage.Enemy,120,400,330);
-            // gc.DrawImage(GcImage.Enemy,500,350,30);
             gc.SetColor(255,255,255);
             gc.SetFontSize(90);
             gc.DrawString("Save the Earth",50,260);
@@ -189,7 +182,6 @@ public sealed class Game : GameBase
                     gc.SetColor(255,0,0);
                     // gc.SetFontSize(100);
                     gc.DrawString("Speed Up!",250,640);
-                    // gc.DrawString("Speed Up!",140,640);
             }
 
             // bottom bar black
@@ -252,8 +244,8 @@ public sealed class Game : GameBase
             enemy_y[i] = -gc.Random(100,480);
             enemy_speed[i] = gc.Random(enemy_speed_min,enemy_speed_max);
             enemy_survived[i] = true;
+        }
             earth_hp = 100;
             earth_count = 0;
-        }
     }
 }
