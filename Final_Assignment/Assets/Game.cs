@@ -16,7 +16,7 @@ public sealed class Game : GameBase
     int enemy_speed_max = 5;
 
     int player_x = 360;
-    int player_y = 1000;
+    int player_y = 950;
     int player_dir = 1;
     int player_speed = 8;
 
@@ -27,7 +27,7 @@ public sealed class Game : GameBase
 
     int bullet_speed = -100;
     int bullet_x = 0;
-    int bullet_y = 1000;
+    int bullet_y = 950;
     bool bullet_onscreen = false;
 
     int earth_hp = 100;
@@ -53,7 +53,6 @@ public sealed class Game : GameBase
         }
 
         else if(gameState == 1){
-
             if(score>high_score){
                 high_score = score;
             }
@@ -86,11 +85,15 @@ public sealed class Game : GameBase
                 
                 // Earth HP
                 if(enemy_y[i]> 1280){
-                    gc.PlaySound(GcSound.Bling);
+                    gc.PlaySE(GcSound.Bling);
                     earth_count++;
                     earth_hp-=20;
                 }
-                if(earth_hp==0) gameState=2;
+                if(earth_hp==0) {
+                    gc.PlaySE(GcSound.Dead);
+                    gameState=2;
+                    gc.Save("hs",high_score);
+                }
 
                 // show new enemies
                 if(enemy_y[i]> 1280 || enemy_survived[i]==false){
@@ -104,6 +107,7 @@ public sealed class Game : GameBase
                 if (gc.CheckHitRect (
                     player_x,player_y,110,107,
                     enemy_x[i],enemy_y[i],enemy_w,enemy_h)) {
+                        gc.PlaySE(GcSound.Dead);
                         earth_hp=0;
                         gameState =2;
                         gc.Save("hs",high_score);
@@ -111,13 +115,14 @@ public sealed class Game : GameBase
 
                 // check whether a bullet contacts with an enemy
                 if(gc.CheckHitRect(bullet_x,bullet_y,48,36,enemy_x[i],enemy_y[i],enemy_w,enemy_h)){
-                    bullet_y=1000;
+                    bullet_y=950;
                     bullet_onscreen=false;
                     enemy_survived[i] = false;
                     score++;
 
                     // change stage
                     if(score!=0 && score%50==0){
+                        gc.PlaySE(GcSound.Stage);
                         enemy_speed_min++;
                         enemy_speed_max++;
                         stage++;
@@ -127,11 +132,12 @@ public sealed class Game : GameBase
 
             // shooting bullets
             if(bullet_onscreen==false){
+                gc.PlaySE(GcSound.Shooting);
                 bullet_x = player_x+75;
                 bullet_onscreen=true;
             }
             if(bullet_y<0){
-                bullet_y=1000;
+                bullet_y=950;
                 bullet_onscreen=false;
             }
             bullet_y += bullet_speed;
@@ -142,7 +148,7 @@ public sealed class Game : GameBase
             if(gc.GetPointerFrameCount(0) >=120){
                 gameState=0;
                 player_x = 360;
-                player_y = 1000;
+                player_y = 950;
                 score = 0;
                 enemy_speed_min=2;
                 enemy_speed_max=5;
@@ -170,14 +176,15 @@ public sealed class Game : GameBase
             gc.DrawImage(GcImage.Background,0,0);
             gc.DrawImage(GcImage.Flighter,player_x,player_y);
 
-            // Enemies
+            // Display enemies
             for(int i =0 ; i < ENEMY_NUM ; i ++ ){
                 gc.DrawImage(GcImage.Enemy,enemy_x[i],enemy_y[i]); 
             }
 
-            // Bullets
+            // Display a bullet
             gc.DrawImage(GcImage.Bullet,bullet_x,bullet_y);
 
+            // Display "Speed up!" message at every 50 points
             if(score!=0 && score%50==0){
                     gc.SetColor(255,0,0);
                     // gc.SetFontSize(100);
